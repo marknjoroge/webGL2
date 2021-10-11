@@ -1,5 +1,5 @@
 
-export default class ColorGUIHelper {
+export class ColorGUIHelper {
     constructor(object, prop) {
         this.object = object;
         this.prop = prop;
