@@ -8,15 +8,20 @@ import { ColorGUIHelper } from './color_gui_helper.js';
 let canvas = document.querySelector('#my-canvas');
 let renderer = new THREE.WebGLRenderer({ canvas });
 
+
+let scene = new THREE.Scene();
+
 let planeSize = 40;
 let doorSize = 6;
 
 let color = 0xFFFFFF;
 
+let tvIsOn;
 let door;
 
 let doorIsOpen = true;
 let timeIsDay = true;
+let bulbOn = true;
 
 let WALL_HEIGHT = 20;
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -35,12 +40,16 @@ let near = 0.1;
 let far = 1000;
 let camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
 
+let ambientLight;
+let bulbLight;
+let sunLight;
+let rectLight;
+let rectLight2;
 
 function main() {
 
     createScene();
     createLights();
-    createGUI();
 
 
     window.addEventListener('resize', onWindowResize, false);
@@ -59,7 +68,6 @@ function onWindowResize() {
 function createScene() {
 
     camera.position.set(0, 30, 80);
-    let scene = new THREE.Scene();
     scene.background = new THREE.Color('black');
 
 
@@ -99,7 +107,7 @@ function createScene() {
     scene.add(mesh);
 
 
-    let torchGeo = new THREE.CylinderGeometry(.1, .2, 1, 10);
+    let torchGeo = new THREE.CylinderGeometry(0.1, 0.2, 1, 10);
     let torchMat = new THREE.MeshStandardMaterial({ color: '#8AC' });
     let torch = new THREE.Mesh(torchGeo, torchMat);
 
@@ -112,9 +120,9 @@ function createScene() {
     let sphereHeightDivisions = 16;
     let sphereGeo = new THREE.SphereGeometry(bulbHolber, sphereWidthDivisions, sphereHeightDivisions);
     let sphereMat = new THREE.MeshStandardMaterial({ map: bulbTexture });
-    let mesh = new THREE.Mesh(sphereGeo, sphereMat);
-    mesh.position.set(0, planeSize / 2, 0);
-    scene.add(mesh);
+    let bulbMesh = new THREE.Mesh(sphereGeo, sphereMat);
+    bulbMesh.position.set(0, planeSize / 2, 0);
+    scene.add(bulbMesh);
 
 
     let tvGeo = new THREE.BoxGeometry(10, 5, .1);
@@ -124,7 +132,7 @@ function createScene() {
     scene.add(tv);
 
 
-    tvLight = new THREE.RectAreaLight(0xffffff, 1, 10, 5);
+    let tvLight = new THREE.RectAreaLight(0xffffff, 1, 10, 5);
     tvLight.position.set(-12, 5, - planeSize / 2 + .7);
     tvLight.lookAt(12, 5);
 
@@ -170,11 +178,11 @@ function createScene() {
     scene.add(table);
 
 
-    let clothesGeo = new THREE.CylinderGeometry(.5, 3, 5, .1);
+    let clothesGeo = new THREE.CylinderGeometry(0.5, 3, 5, 0.1);
     let clothesMat = new THREE.MeshStandardMaterial({ color: '#8AC' });
-    let tv = new THREE.Mesh(clothesGeo, clothesMat);
-    tv.position.set(-12, 5, - planeSize / 2 + .7);
-    scene.add(tv);
+    let clothes = new THREE.Mesh(clothesGeo, clothesMat);
+    clothes.position.set(-12, 5, - planeSize / 2 + .7);
+    scene.add(clothes);
 
 
 
@@ -213,8 +221,9 @@ var switches = {
         } else {
             sunLight.intensity = 0.08;
             ambientLight.intensity = 0.7;
-            rectLight = 5;
+            rectLight.intensity = 5;
         }
+        timeIsDay = !timeIsDay;
     },
     lights: function () {
         if (!bulbOn) {
@@ -240,8 +249,6 @@ var switches = {
         tvIsOn = !tvIsOn;
     }
 }
-
-
 
 
 // custom redude light animation
@@ -283,19 +290,17 @@ function createLights() {
     let width = 5;
     let height = 10;
 
-    let ambientLight = new THREE.AmbientLight(color, intensity);
+    ambientLight = new THREE.AmbientLight(color, intensity);
 
-    let sunLight = new THREE.DirectionalLight(color, 0.08);
+    sunLight = new THREE.DirectionalLight(color, 0.08);
 
-    let bulbLight = new THREE.PointLight(color, .4);
+    bulbLight = new THREE.PointLight(color, .4);
 
-    let torchLight = new THREE.PointLight(color, 1);
-
-    let rectLight = new THREE.RectAreaLight(0xffffff, 5, width, height);
+     rectLight = new THREE.RectAreaLight(0xffffff, 5, width, height);
     rectLight.position.set(planeSize / 2, height / 2, 0);
     rectLight.lookAt(0, height / 2, 0);
 
-    let rectLight2 = new THREE.RectAreaLight(0xffffff, 5, width, height);
+    rectLight2 = new THREE.RectAreaLight(0xffffff, 5, width, height);
     rectLight2.position.set(planeSize / 2, height / 2, 0);
     rectLight2.lookAt(0, height / 2, 0);
 
@@ -308,23 +313,23 @@ function createLights() {
     scene.add(sunLight);
 
     bulbLight.position.set(0, 10, 0);
-}
+    // GUI options
 
-// GUI options
-function createGUI() {
-    let gui = new GUI();
-    gui.addColor(new ColorGUIHelper(ambientLight, 'color'), 'value').name('color');
-    gui.add(ambientLight, 'intensity', 0, 2, 0.01).name("ambient light");
-    gui.add(bulbLight, 'intensity', 0, 2, 0.1).name("bulb light");
-    gui.add(sunLight, 'intensity', 0, 2, 0.01).name("sun light");
-    gui.add(rectLight, 'intensity', 0, 2, 0.01).name("rect light");
-    gui.add(switches, 'lights').name("bulb on/off");
-    gui.add(switches, 'night').name("day/night");
-    gui.add(switches, 'toogleDoor').name('open/close door');
-    gui.add(switches, 'switchTV').name('switch tv');
+    createGUI();
+    function createGUI() {
+        let gui = new GUI();
+        gui.addColor(new ColorGUIHelper(ambientLight, 'color'), 'value').name('color');
+        gui.add(ambientLight, 'intensity', 0, 2, 0.01).name("ambient light");
+        gui.add(bulbLight, 'intensity', 0, 2, 0.1).name("bulb light");
+        gui.add(sunLight, 'intensity', 0, 2, 0.01).name("sun light");
+        gui.add(rectLight, 'intensity', 0, 2, 0.01).name("rect light");
+        gui.add(switches, 'lights').name("bulb on/off");
+        gui.add(switches, 'night').name("day/night");
+        gui.add(switches, 'toogleDoor').name('open/close door');
+        gui.add(switches, 'switchTV').name('switch tv');
+    }
+    
 }
-
-createGUI();
 
 function resizeRendererToDisplaySize(renderer) {
     let canvas = renderer.domElement;
