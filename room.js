@@ -29,6 +29,9 @@ function main() {
     let wallTexture = new THREE.TextureLoader().load('./textures/brick.jpeg');
     let socksTexture = new THREE.TextureLoader().load('./textures/socks.png');
     let floorTexture = new THREE.TextureLoader().load('./textures/floor.png');
+    let bedTexture = new THREE.TextureLoader().load('./textures/bed.jpg');
+    let cookerTexture = new THREE.TextureLoader().load('./textures/cooker.jpeg');
+    let clothesTexture = new THREE.TextureLoader().load('./textures/clothes.jpeg');
 
     let fov = 45;
     let aspect = window.innerWidth / window.innerHeight;  // the canvas default
@@ -109,9 +112,9 @@ function main() {
     let CUBE_SIZE = 4;
     {
         let cubeGeo = new THREE.BoxGeometry(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE);
-        let cubeMat = new THREE.MeshStandardMaterial({ color: '#8AC' });
+        let cubeMat = new THREE.MeshStandardMaterial({ map: cookerTexture });
         let mesh = new THREE.Mesh(cubeGeo, cubeMat);
-        mesh.position.set(CUBE_SIZE + 10, CUBE_SIZE / 2, 15);
+        mesh.position.set(2, CUBE_SIZE/2, - planeSize / 2 + CUBE_SIZE /2);
         scene.add(mesh);
     }
     {
@@ -137,7 +140,7 @@ function main() {
         let sphereGeo = new THREE.SphereGeometry(bulbHolber, sphereWidthDivisions, sphereHeightDivisions);
         let sphereMat = new THREE.MeshStandardMaterial({ map: bulbTexture });
         let mesh = new THREE.Mesh(sphereGeo, sphereMat);
-        mesh.position.set(0, planeSize - 4, 0);
+        mesh.position.set(0, planeSize /2, 0);
         scene.add(mesh);
     }
     {
@@ -179,6 +182,14 @@ function main() {
         scene.add(sofa4);
     }
     {
+
+        let tableGeo4 = new THREE.BoxGeometry(4, 2, CUBE_SIZE);
+        let tableMat4 = new THREE.MeshStandardMaterial({ map: sofaTexture });
+        let table = new THREE.Mesh(tableGeo4, tableMat4);
+        table.position.set(CUBE_SIZE - 15, CUBE_SIZE / 2, -7);
+        scene.add(table);
+    }
+    {
         let clothesGeo = new THREE.CylinderGeometry(.5, 3, 5, .1);
         let clothesMat = new THREE.MeshStandardMaterial({ color: '#8AC' });
         let tv = new THREE.Mesh(clothesGeo, clothesMat);
@@ -193,6 +204,20 @@ function main() {
         socks.position.set(CUBE_SIZE - 15, 0, 7);
         scene.add(socks);
 
+    }
+    {
+        let bedGeo4 = new THREE.BoxGeometry(16, CUBE_SIZE, 10);
+        let bedMat4 = new THREE.MeshStandardMaterial({ map: bedTexture });
+        let bed4 = new THREE.Mesh(bedGeo4, bedMat4);
+        bed4.position.set(CUBE_SIZE - 16, CUBE_SIZE / 2, 15);
+        scene.add(bed4);
+    }
+    {
+        let basketGeo4 = new THREE.CylinderGeometry(2.5, 1.5, 3, 32);
+        let basketMat4 = new THREE.MeshStandardMaterial({ map: clothesTexture });
+        let basket = new THREE.Mesh(basketGeo4, basketMat4);
+        basket.position.set(CUBE_SIZE, CUBE_SIZE / 2, 15);
+        scene.add(basket);
     }
 
 
